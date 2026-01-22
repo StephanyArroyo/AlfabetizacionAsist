@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Alfabetización Universal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 150px;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            background: #f8f8ff;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .result-text {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #c00;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .preview-image.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Asistente de Alfabetización Universal</h1>
+            <p>Convierte textos complejos en Lectura Fácil para todos</p>
+        </div>
+
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="cambiarTab('texto')">Simplificar Texto</button>
+                <button class="tab" onclick="cambiarTab('imagen')">Procesar Imagen</button>
+                <button class="tab" onclick="cambiarTab('termino')">Explicar Término</button>
+            </div>
+
+            <!-- Tab 1: Simplificar Texto -->
+            <div id="tab-texto" class="tab-content active">
+                <div class="info-box">
+                    <strong>💡 ¿Cómo funciona?</strong><br>
+                    Escribe o pega un texto complejo y lo convertiremos en un formato de Lectura Fácil, usando frases simples y lenguaje cotidiano.
+                </div>
+
+                <label for="textoOriginal">Texto a simplificar:</label>
+                <textarea id="textoOriginal" placeholder="Ejemplo: El artículo 23 del código civil estipula que las partes contratantes deberán cumplir con las obligaciones pactadas de buena fe..."></textarea>
+
+                <button onclick="simplificarTexto()">Simplificar Texto</button>
+
+                <div class="loading" id="loading-texto">
+                    <div class="spinner"></div>
+                    <p>Procesando texto...</p>
+                </div>
+
+                <div class="error" id="error-texto"></div>
+
+                <div class="result" id="result-texto">
+                    <h3>Texto Simplificado:</h3>
+                    <div class="result-text" id="textoSimplificado"></div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Procesar Imagen -->
+            <div id="tab-imagen" class="tab-content">
+                <div class="info-box">
+                    <strong>📸 ¿Cómo funciona?</strong><br>
+                    Sube una imagen con texto (documento, cartel, contrato) y extraeremos el texto para luego simplificarlo.
+                </div>
+
+                <label for="imagenInput">Sube una imagen con texto:</label>
+                <div class="file-upload" onclick="document.getElementById('imagenInput').click()">
+                    <input type="file" id="imagenInput" accept="image/*" onchange="previsualizarImagen(event)">
+                    <p>📁 Haz clic aquí para seleccionar una imagen</p>
+                    <small>Formatos: JPG, PNG, WEBP, GIF</small>
+                </div>
+
+                <img id="previewImg" class="preview-image" alt="Vista previa">
+
+                <button onclick="procesarImagen()" id="btnProcesarImagen" disabled>Procesar Imagen</button>
+
+                <div class="loading" id="loading-imagen">
+                    <div class="spinner"></div>
+                    <p>Procesando imagen...</p>
+                </div>
+
+                <div class="error" id="error-imagen"></div>
+
+                <div class="result" id="result-imagen">
+                    <h3>Resultado:</h3>
+                    <div class="result-text" id="imagenResultado"></div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Explicar Término -->
+            <div id="tab-termino" class="tab-content">
+                <div class="info-box">
+                    <strong>🔍 ¿Cómo funciona?</strong><br>
+                    Escribe una palabra o término técnico y te daremos una explicación simple con ejemplos cotidianos.
+                </div>
+
+                <label for="terminoInput">Término a explicar:</label>
+                <input type="text" id="terminoInput" placeholder="Ejemplo: usufructo, hipoteca, procrastinar...">
+
+                <button onclick="explicarTermino()">Explicar Término</button>
+
+                <div class="loading" id="loading-termino">
+                    <div class="spinner"></div>
+                    <p>Generando explicación...</p>
+                </div>
+
+                <div class="error" id="error-termino"></div>
+
+                <div class="result" id="result-termino">
+                    <h3>Explicación:</h3>
+                    <div class="result-text" id="terminoExplicacion"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:5000';
+
+        function cambiarTab(tab) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Mostrar el tab seleccionado
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function simplificarTexto() {
+            const texto = document.getElementById('textoOriginal').value.trim();
+            const loading = document.getElementById('loading-texto');
+            const error = document.getElementById('error-texto');
+            const result = document.getElementById('result-texto');
+            const resultText = document.getElementById('textoSimplificado');
+
+            if (!texto) {
+                mostrarError('error-texto', 'Por favor, escribe un texto para simplificar');
+                return;
+            }
+
+            loading.classList.add('show');
+            error.classList.remove('show');
+            result.classList.remove('show');
+
+            try {
+                const response = await fetch(`${API_URL}/simplificar-texto`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ texto: texto })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error al procesar el texto');
+                }
+
+                resultText.textContent = data.texto_simplificado;
+                result.classList.add('show');
+
+            } catch (err) {
+                mostrarError('error-texto', err.message);
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        function previsualizarImagen(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('previewImg');
+            const btn = document.getElementById('btnProcesarImagen');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.add('show');
+                    btn.disabled = false;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function procesarImagen() {
+            const fileInput = document.getElementById('imagenInput');
+            const loading = document.getElementById('loading-imagen');
+            const error = document.getElementById('error-imagen');
+            const result = document.getElementById('result-imagen');
+            const resultText = document.getElementById('imagenResultado');
+
+            if (!fileInput.files[0]) {
+                mostrarError('error-imagen', 'Por favor, selecciona una imagen');
+                return;
+            }
+
+            loading.classList.add('show');
+            error.classList.remove('show');
+            result.classList.remove('show');
+
+            try {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = async function(e) {
+                    const imagenBase64 = e.target.result;
+
+                    const response = await fetch(`${API_URL}/simplificar-imagen`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ imagen: imagenBase64 })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Error al procesar la imagen');
+                    }
+
+                    // Formatear la respuesta para mejor legibilidad
+                    resultText.innerHTML = data.respuesta_completa.replace(/\n/g, '<br>');
+                    result.classList.add('show');
+                    loading.classList.remove('show');
+                };
+
+                reader.readAsDataURL(file);
+
+            } catch (err) {
+                mostrarError('error-imagen', err.message);
+                loading.classList.remove('show');
+            }
+        }
+
+        async function explicarTermino() {
+            const termino = document.getElementById('terminoInput').value.trim();
+            const loading = document.getElementById('loading-termino');
+            const error = document.getElementById('error-termino');
+            const result = document.getElementById('result-termino');
+            const resultText = document.getElementById('terminoExplicacion');
+
+            if (!termino) {
+                mostrarError('error-termino', 'Por favor, escribe un término para explicar');
+                return;
+            }
+
+            loading.classList.add('show');
+            error.classList.remove('show');
+            result.classList.remove('show');
+
+            try {
+                const response = await fetch(`${API_URL}/explicar-termino`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ termino: termino })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error al explicar el término');
+                }
+
+                resultText.textContent = data.explicacion;
+                result.classList.add('show');
+
+            } catch (err) {
+                mostrarError('error-termino', err.message);
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        function mostrarError(elementId, mensaje) {
+            const error = document.getElementById(elementId);
+            error.textContent = mensaje;
+            error.classList.add('show');
+        }
+    </script>
+</body>
+</html>
