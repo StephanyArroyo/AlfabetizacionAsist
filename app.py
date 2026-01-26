@@ -218,8 +218,11 @@ Usa un lenguaje accesible para todos."""
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Render asigna un puerto dinámico; localmente usará el 5000
-    port = int(os.getenv('PORT', 5000))
+    # Usamos la variable de entorno 'PORT' que asigna Render automáticamente.
+    # Si no existe (desarrollo local), usará el puerto 5000.
+    port = int(os.environ.get('PORT', 5000))
     
-    # IMPORTANTE: host='0.0.0.0' es lo que resuelve el error de "no open ports"
-    app.run(host='0.0.0.0', port=port)
+    # IMPORTANTE: host='0.0.0.0' permite que Render reciba tráfico externo.
+    # debug=False es lo recomendado para producción en Render.
+    app.run(host='0.0.0.0', port=port, debug=False)
+
