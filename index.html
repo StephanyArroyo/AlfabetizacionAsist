@@ -339,7 +339,9 @@
     </div>
 
     <script>
-        const API_URL = 'http://127.0.0.1:5000';
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000' 
+            : 'https://tu-backend-en-render.onrender.com';
 
         function cambiarTab(tab) {
             // Ocultar todos los tabs
@@ -511,4 +513,5 @@
         }
     </script>
 </body>
+
 </html>
